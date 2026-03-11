@@ -1,8 +1,7 @@
 {
-  "routes": [
-    {
-      "src": "^/predict$",
-      "dest": "/api/predict"
+  "functions": {
+    "api/*.py": {
+      "runtime": "python3.9"
     }
-  ]
+  }
 }

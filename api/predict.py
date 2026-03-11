@@ -1,33 +1,19 @@
-import json
+from flask import Flask, request, jsonify
 import numpy as np
 import joblib
-import os
 
-modelo = joblib.load(os.path.join(os.path.dirname(__file__), "../modelo_iris.pkl"))
-scaler = joblib.load(os.path.join(os.path.dirname(__file__), "../scaler.pkl"))
+app = Flask(__name__)
+
+# cargar modelo
+modelo = joblib.load("modelo_iris.pkl")
+scaler = joblib.load("scaler.pkl")
 
 clases = ["Iris-setosa", "Iris-versicolor", "Iris-virginica"]
 
-def handler(request):
+@app.route("/api/predict", methods=["POST"])
+def predict():
 
-    # Headers CORS
-    headers = {
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "POST, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type"
-    }
-
-    # Responder preflight CORS
-    if request.method == "OPTIONS":
-        return {
-            "statusCode": 200,
-            "headers": headers,
-            "body": ""
-        }
-
-    # Leer datos enviados
-    data = json.loads(request.body)
+    data = request.json
 
     sepal_length = float(data["sepal_length"])
     sepal_width = float(data["sepal_width"])
@@ -44,10 +30,8 @@ def handler(request):
 
     resultado = clases[clase]
 
-    return {
-        "statusCode": 200,
-        "headers": headers,
-        "body": json.dumps({
-            "prediccion": resultado
-        })
-    }
+    return jsonify({"prediccion": resultado})
+
+# handler requerido por vercel
+def handler(request, context):
+    return app(request.environ, lambda status, headers: None)
