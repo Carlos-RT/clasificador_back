@@ -1,13 +1,9 @@
 from flask import Flask, request, jsonify
-from flask_cors import CORS
 import numpy as np
 import joblib
 import os
 
 app = Flask(__name__)
-
-# permitir CORS correctamente
-CORS(app, resources={r"/*": {"origins": "*"}})
 
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
@@ -17,18 +13,14 @@ scaler = joblib.load(os.path.join(BASE_DIR, "scaler.pkl"))
 clases = ["Iris-setosa", "Iris-versicolor", "Iris-virginica"]
 
 
-@app.route("/")
-def home():
-    return "API Iris funcionando"
-
-
-@app.route("/predict", methods=["POST", "OPTIONS"])
+@app.route("/", methods=["GET", "POST"])
 def predict():
 
-    # responder preflight
-    if request.method == "OPTIONS":
-        return jsonify({"status": "ok"}), 200
+    # si se abre desde el navegador
+    if request.method == "GET":
+        return "API Iris funcionando"
 
+    # si viene del frontend
     data = request.json
 
     sepal_length = float(data["sepal_length"])
