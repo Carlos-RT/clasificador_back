@@ -1,9 +1,11 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 import numpy as np
 import joblib
 import os
 
 app = Flask(__name__)
+CORS(app)
 
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
@@ -16,11 +18,10 @@ clases = ["Iris-setosa", "Iris-versicolor", "Iris-virginica"]
 @app.route("/", methods=["GET", "POST"])
 def predict():
 
-    # si se abre desde el navegador
+    # cuando se abre desde el navegador
     if request.method == "GET":
         return "API Iris funcionando"
 
-    # si viene del frontend
     data = request.json
 
     sepal_length = float(data["sepal_length"])
