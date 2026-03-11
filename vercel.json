@@ -1,6 +1,8 @@
 {
-  "rewrites": [
-    { "source": "/", "destination": "/api/predict" },
-    { "source": "/predict", "destination": "/api/predict" }
+  "routes": [
+    {
+      "src": "^/predict$",
+      "dest": "/api/predict"
+    }
   ]
 }
