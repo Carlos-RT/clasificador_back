@@ -6,8 +6,8 @@ import os
 
 app = Flask(__name__)
 
-# permitir solicitudes externas
-CORS(app)
+# permitir CORS correctamente
+CORS(app, resources={r"/*": {"origins": "*"}})
 
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
@@ -22,8 +22,12 @@ def home():
     return "API Iris funcionando"
 
 
-@app.route("/predict", methods=["POST"])
+@app.route("/predict", methods=["POST", "OPTIONS"])
 def predict():
+
+    # responder preflight
+    if request.method == "OPTIONS":
+        return jsonify({"status": "ok"}), 200
 
     data = request.json
 
