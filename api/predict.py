@@ -1,31 +1,25 @@
-from flask import Flask, request, jsonify
+import json
 import numpy as np
 import joblib
 import os
 
-app = Flask(__name__)
-
-# ruta absoluta del proyecto
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
-modelo_path = os.path.join(BASE_DIR, "modelo_iris.pkl")
-scaler_path = os.path.join(BASE_DIR, "scaler.pkl")
-
-modelo = joblib.load(modelo_path)
-scaler = joblib.load(scaler_path)
+modelo = joblib.load(os.path.join(BASE_DIR, "modelo_iris.pkl"))
+scaler = joblib.load(os.path.join(BASE_DIR, "scaler.pkl"))
 
 clases = ["Iris-setosa", "Iris-versicolor", "Iris-virginica"]
 
 
-@app.route("/")
-def home():
-    return "API Iris funcionando"
+def handler(request):
 
+    if request.method != "POST":
+        return {
+            "statusCode": 405,
+            "body": json.dumps({"error": "Method not allowed"})
+        }
 
-@app.route("/predict", methods=["POST"])
-def predict():
-
-    data = request.json
+    data = request.get_json()
 
     sepal_length = float(data["sepal_length"])
     sepal_width = float(data["sepal_width"])
@@ -38,8 +32,11 @@ def predict():
 
     pred = modelo.predict(entrada)
 
-    clase = np.argmax(pred)
+    clase = int(np.argmax(pred))
 
     resultado = clases[clase]
 
-    return jsonify({"prediccion": resultado})
+    return {
+        "statusCode": 200,
+        "body": json.dumps({"prediccion": resultado})
+    }
