@@ -12,7 +12,7 @@ scaler = joblib.load(os.path.join(BASE_DIR, "../scaler.pkl"))
 
 clases = ["Iris-setosa", "Iris-versicolor", "Iris-virginica"]
 
-@app.route("/api/predict", methods=["POST"])
+@app.route("/predict", methods=["POST"])
 def predict():
 
     data = request.json
