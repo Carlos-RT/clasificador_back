@@ -3,7 +3,6 @@ import numpy as np
 import joblib
 import os
 
-# cargar modelo y scaler
 modelo = joblib.load(os.path.join(os.path.dirname(__file__), "../modelo_iris.pkl"))
 scaler = joblib.load(os.path.join(os.path.dirname(__file__), "../scaler.pkl"))
 
@@ -11,13 +10,7 @@ clases = ["Iris-setosa", "Iris-versicolor", "Iris-virginica"]
 
 def handler(request):
 
-    if request.method != "POST":
-        return {
-            "statusCode": 405,
-            "body": json.dumps({"error": "Método no permitido"})
-        }
-
-    data = request.json
+    data = request.json()
 
     sepal_length = float(data["sepal_length"])
     sepal_width = float(data["sepal_width"])
