@@ -10,7 +10,24 @@ clases = ["Iris-setosa", "Iris-versicolor", "Iris-virginica"]
 
 def handler(request):
 
-    data = request.json()
+    # Headers CORS
+    headers = {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "POST, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type"
+    }
+
+    # Responder preflight CORS
+    if request.method == "OPTIONS":
+        return {
+            "statusCode": 200,
+            "headers": headers,
+            "body": ""
+        }
+
+    # Leer datos enviados
+    data = json.loads(request.body)
 
     sepal_length = float(data["sepal_length"])
     sepal_width = float(data["sepal_width"])
@@ -29,10 +46,7 @@ def handler(request):
 
     return {
         "statusCode": 200,
-        "headers": {
-            "Content-Type": "application/json",
-            "Access-Control-Allow-Origin": "*"
-        },
+        "headers": headers,
         "body": json.dumps({
             "prediccion": resultado
         })
