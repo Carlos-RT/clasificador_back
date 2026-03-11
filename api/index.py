@@ -1,9 +1,13 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 import numpy as np
 import joblib
 import os
 
 app = Flask(__name__)
+
+# permitir solicitudes externas
+CORS(app)
 
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
@@ -12,9 +16,11 @@ scaler = joblib.load(os.path.join(BASE_DIR, "scaler.pkl"))
 
 clases = ["Iris-setosa", "Iris-versicolor", "Iris-virginica"]
 
+
 @app.route("/")
 def home():
     return "API Iris funcionando"
+
 
 @app.route("/predict", methods=["POST"])
 def predict():
