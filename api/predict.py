@@ -5,12 +5,22 @@ import os
 
 app = Flask(__name__)
 
-BASE_DIR = os.path.dirname(__file__)
+# ruta absoluta del proyecto
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
-modelo = joblib.load(os.path.join(BASE_DIR, "../modelo_iris.pkl"))
-scaler = joblib.load(os.path.join(BASE_DIR, "../scaler.pkl"))
+modelo_path = os.path.join(BASE_DIR, "modelo_iris.pkl")
+scaler_path = os.path.join(BASE_DIR, "scaler.pkl")
+
+modelo = joblib.load(modelo_path)
+scaler = joblib.load(scaler_path)
 
 clases = ["Iris-setosa", "Iris-versicolor", "Iris-virginica"]
+
+
+@app.route("/")
+def home():
+    return "API Iris funcionando"
+
 
 @app.route("/predict", methods=["POST"])
 def predict():
