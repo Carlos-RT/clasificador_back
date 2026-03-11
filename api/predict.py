@@ -1,12 +1,14 @@
 from flask import Flask, request, jsonify
 import numpy as np
 import joblib
+import os
 
 app = Flask(__name__)
 
-# cargar modelo
-modelo = joblib.load("modelo_iris.pkl")
-scaler = joblib.load("scaler.pkl")
+BASE_DIR = os.path.dirname(__file__)
+
+modelo = joblib.load(os.path.join(BASE_DIR, "../modelo_iris.pkl"))
+scaler = joblib.load(os.path.join(BASE_DIR, "../scaler.pkl"))
 
 clases = ["Iris-setosa", "Iris-versicolor", "Iris-virginica"]
 
@@ -31,7 +33,3 @@ def predict():
     resultado = clases[clase]
 
     return jsonify({"prediccion": resultado})
-
-# handler requerido por vercel
-def handler(request, context):
-    return app(request.environ, lambda status, headers: None)
