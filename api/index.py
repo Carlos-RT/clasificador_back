@@ -50,7 +50,7 @@ def extraer_features(text):
     length = len(text)
 
     if length == 0:
-        return [0]*17
+        return [0]*20
 
     mayus = sum(1 for c in text if c.isupper())
     minus = sum(1 for c in text if c.islower())
@@ -81,6 +81,22 @@ def extraer_features(text):
 
     entropy = shannon_entropy(text)
 
+    # ===============================
+    # FEATURES EXTRA
+    # ===============================
+
+    base64_chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/="
+    freq_base64 = sum(1 for c in text if c in base64_chars) / length
+
+    hex_chars = "0123456789abcdefABCDEF"
+    ratio_hex = sum(1 for c in text if c in hex_chars) / length
+
+    try:
+        base64.b64decode(text)
+        es_base64 = 1
+    except:
+        es_base64 = 0
+
     return [
         length,
         entropy,
@@ -98,9 +114,11 @@ def extraer_features(text):
         padding,
         alpha/length,
         unique_chars,
-        ratio_unique
+        ratio_unique,
+        freq_base64,
+        ratio_hex,
+        es_base64
     ]
-
 
 # ===============================
 # DESCIFRADORES
