@@ -30,12 +30,16 @@ clases = [
 # ===============================
 
 def shannon_entropy(text):
+
     counter = Counter(text)
     length = len(text)
+
     entropy = 0
 
     for count in counter.values():
+
         p = count / length
+
         entropy -= p * math.log2(p)
 
     return entropy
@@ -50,7 +54,7 @@ def extraer_features(text):
     length = len(text)
 
     if length == 0:
-        return [0]*17
+        return [0]*20
 
     mayus = sum(1 for c in text if c.isupper())
     minus = sum(1 for c in text if c.islower())
@@ -67,6 +71,7 @@ def extraer_features(text):
     var_ascii = np.var(ascii_vals)
 
     counter = Counter(text)
+
     freq = sorted(counter.values(), reverse=True)
 
     top1 = freq[0]/length
@@ -77,11 +82,33 @@ def extraer_features(text):
     alpha = sum(1 for c in text if c.isalpha())
 
     unique_chars = len(set(text))
+
     ratio_unique = unique_chars/length
 
     entropy = shannon_entropy(text)
 
+
+    # ===============================
+    # FEATURES NUEVAS
+    # ===============================
+
+    base64_chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/="
+
+    freq_base64 = sum(1 for c in text if c in base64_chars) / length
+
+    hex_chars = "0123456789abcdefABCDEF"
+
+    ratio_hex = sum(1 for c in text if c in hex_chars) / length
+
+    try:
+        base64.b64decode(text)
+        es_base64 = 1
+    except:
+        es_base64 = 0
+
+
     return [
+
         length,
         entropy,
         mayus/length,
@@ -98,7 +125,10 @@ def extraer_features(text):
         padding,
         alpha/length,
         unique_chars,
-        ratio_unique
+        ratio_unique,
+        freq_base64,
+        ratio_hex,
+        es_base64
     ]
 
 
@@ -107,10 +137,12 @@ def extraer_features(text):
 # ===============================
 
 def rot13_decode(text):
+
     return codecs.decode(text, 'rot_13')
 
 
 def caesar_bruteforce(text):
+
     resultados = []
 
     for shift in range(26):
@@ -126,11 +158,12 @@ def caesar_bruteforce(text):
                 decoded += chr((ord(c) - base - shift) % 26 + base)
 
             else:
+
                 decoded += c
 
         resultados.append(decoded)
 
-    return resultados[0]   # devolvemos el primero
+    return resultados[0]
 
 
 def base64_decode(text):
@@ -146,13 +179,18 @@ def base64_decode(text):
 # ===============================
 
 @app.route("/", methods=["GET", "POST"])
+
 def predict():
 
     if request.method == "GET":
+
         return "API Detector de Cifrados funcionando"
 
+
     data = request.json
+
     texto = data["texto"]
+
 
     features = extraer_features(texto)
 
@@ -163,6 +201,7 @@ def predict():
     pred = modelo.predict(entrada)[0]
 
     tipo = clases[int(pred)]
+
 
     # =========================
     # DESCIFRADO
@@ -189,6 +228,7 @@ def predict():
     elif tipo == "XOR":
 
         descifrado = "No se puede descifrar XOR sin la clave."
+
 
     return jsonify({
         "prediccion": tipo,
