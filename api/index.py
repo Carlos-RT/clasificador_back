@@ -245,15 +245,15 @@ def predict():
 
     descifrado = ""
 
-    if tipo == "Texto plano":
+if tipo == "Texto plano":
 
-        descifrado = texto
+    descifrado = texto
 
-    elif tipo == "ROT13":
+elif tipo == "ROT13":
 
-        descifrado = rot13_decode(texto)
+    descifrado = rot13_decode(texto)
 
-    elif tipo == "Caesar":
+elif tipo == "Caesar":
 
     shift = detectar_shift_caesar(texto)
 
@@ -267,13 +267,13 @@ def predict():
 
         descifrado = caesar_bruteforce(texto)
 
-    elif tipo == "Base64":
+elif tipo == "Base64":
 
-        descifrado = base64_decode(texto)
+    descifrado = base64_decode(texto)
 
-    elif tipo == "XOR":
+elif tipo == "XOR":
 
-        descifrado = "No se puede descifrar XOR sin la clave."
+    descifrado = "No se puede descifrar XOR sin la clave."
 
     return jsonify({
         "prediccion": tipo,
