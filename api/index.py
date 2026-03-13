@@ -87,10 +87,16 @@ def extraer_features(text):
 
     entropy = shannon_entropy(text)
 
+    # ===============================
+    # FEATURES NUEVAS
+    # ===============================
+
     base64_chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/="
+
     freq_base64 = sum(1 for c in text if c in base64_chars) / length
 
     hex_chars = "0123456789abcdefABCDEF"
+
     ratio_hex = sum(1 for c in text if c in hex_chars) / length
 
     try:
@@ -99,7 +105,9 @@ def extraer_features(text):
     except:
         es_base64 = 0
 
+
     return [
+
         length,
         entropy,
         mayus/length,
@@ -124,39 +132,62 @@ def extraer_features(text):
 
 
 # ===============================
-# DETECTAR SHIFT CAESAR
+# FUNCIONES CAESAR
 # ===============================
 
-def detectar_shift_caesar(text):
+def caesar_decode_shift(text, shift):
 
-    frecuencias_ingles = "etaoinshrdlcumwfgypbvkjxqz"
+    decoded = ""
 
-    best_shift = 0
-    best_score = 0
+    for c in text:
+
+        if c.isalpha():
+
+            base = ord('A') if c.isupper() else ord('a')
+
+            decoded += chr((ord(c) - base - shift) % 26 + base)
+
+        else:
+
+            decoded += c
+
+    return decoded
+
+
+# ===============================
+# DETECTAR SHIFT CAESAR (ESPAÑOL)
+# ===============================
+
+def detectar_shift_caesar_espanol(text):
+
+    palabras_es = [
+        " de ", " la ", " que ", " el ", " en ", " y ", " los ", " del ",
+        " se ", " las ", " por ", " un ", " para ", " con ", " no ",
+        " una ", " su ", " al ", " lo ", " como "
+    ]
+
+    mejor_shift = 0
+    mejor_score = -1
+    mejor_texto = ""
 
     for shift in range(26):
 
-        decoded = ""
+        decoded = caesar_decode_shift(text, shift)
 
-        for c in text:
+        texto_lower = " " + decoded.lower() + " "
 
-            if c.isalpha():
+        score = 0
 
-                base = ord('A') if c.isupper() else ord('a')
+        for palabra in palabras_es:
+            score += texto_lower.count(palabra)
 
-                decoded += chr((ord(c) - base - shift) % 26 + base)
+        if score > mejor_score:
 
-            else:
-                decoded += c
+            mejor_score = score
+            mejor_shift = shift
+            mejor_texto = decoded
 
-        score = sum(decoded.lower().count(c) for c in frecuencias_ingles[:6])
-
-        if score > best_score:
-
-            best_score = score
-            best_shift = shift
-
-    return best_shift
+    return mejor_shift, mejor_texto
 
 
 # ===============================
@@ -228,6 +259,8 @@ def predict():
 
     tipo = clases[int(pred)]
 
+    descifrado = ""
+
 
     # =========================
     # CORRECCIÓN CAESAR / ROT13
@@ -235,29 +268,32 @@ def predict():
 
     if tipo in ["Caesar", "ROT13"]:
 
-        shift = detectar_shift_caesar(texto)
+        shift, texto_descifrado = detectar_shift_caesar_espanol(texto)
 
         if shift == 13:
+
             tipo = "ROT13"
+
         else:
+
             tipo = "Caesar"
 
+        descifrado = texto_descifrado
+
 
     # =========================
-    # DESCIFRADO
+    # DESCIFRADO NORMAL
     # =========================
-
-    descifrado = ""
 
     if tipo == "Texto plano":
 
         descifrado = texto
 
-    elif tipo == "ROT13":
+    elif tipo == "ROT13" and descifrado == "":
 
         descifrado = rot13_decode(texto)
 
-    elif tipo == "Caesar":
+    elif tipo == "Caesar" and descifrado == "":
 
         descifrado = caesar_bruteforce(texto)
 
