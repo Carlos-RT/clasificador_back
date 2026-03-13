@@ -132,7 +132,7 @@ def extraer_features(text):
 
 
 # ===============================
-# FUNCIONES CAESAR
+# CAESAR DECODE CON SHIFT
 # ===============================
 
 def caesar_decode_shift(text, shift):
@@ -187,7 +187,7 @@ def detectar_shift_caesar_espanol(text):
             mejor_shift = shift
             mejor_texto = decoded
 
-    return mejor_shift, mejor_texto
+    return mejor_shift, mejor_texto, mejor_score
 
 
 # ===============================
@@ -263,22 +263,22 @@ def predict():
 
 
     # =========================
-    # CORRECCIÓN CAESAR / ROT13
+    # DETECCIÓN CAESAR / ROT13
     # =========================
 
-    if tipo in ["Caesar", "ROT13"]:
+    if tipo in ["Texto plano", "Caesar", "ROT13"]:
 
-        shift, texto_descifrado = detectar_shift_caesar_espanol(texto)
+        shift, texto_descifrado, score = detectar_shift_caesar_espanol(texto)
 
-        if shift == 13:
+        # score mínimo para considerar que hay texto real
+        if score >= 2:
 
-            tipo = "ROT13"
+            if shift == 13:
+                tipo = "ROT13"
+            else:
+                tipo = "Caesar"
 
-        else:
-
-            tipo = "Caesar"
-
-        descifrado = texto_descifrado
+            descifrado = texto_descifrado
 
 
     # =========================
