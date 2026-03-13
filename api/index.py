@@ -5,6 +5,8 @@ import joblib
 import os
 import math
 from collections import Counter
+import base64
+import codecs
 
 app = Flask(__name__)
 CORS(app)
@@ -24,7 +26,7 @@ clases = [
 
 
 # ===============================
-# FUNCIONES PARA EXTRAER FEATURES
+# ENTROPÍA
 # ===============================
 
 def shannon_entropy(text):
@@ -38,6 +40,10 @@ def shannon_entropy(text):
 
     return entropy
 
+
+# ===============================
+# EXTRAER FEATURES
+# ===============================
 
 def extraer_features(text):
 
@@ -56,6 +62,7 @@ def extraer_features(text):
 
     rango_min = min(ascii_vals)
     rango_max = max(ascii_vals)
+
     media_ascii = np.mean(ascii_vals)
     var_ascii = np.var(ascii_vals)
 
@@ -70,7 +77,6 @@ def extraer_features(text):
     alpha = sum(1 for c in text if c.isalpha())
 
     unique_chars = len(set(text))
-
     ratio_unique = unique_chars/length
 
     entropy = shannon_entropy(text)
@@ -96,6 +102,49 @@ def extraer_features(text):
     ]
 
 
+# ===============================
+# DESCIFRADORES
+# ===============================
+
+def rot13_decode(text):
+    return codecs.decode(text, 'rot_13')
+
+
+def caesar_bruteforce(text):
+    resultados = []
+
+    for shift in range(26):
+
+        decoded = ""
+
+        for c in text:
+
+            if c.isalpha():
+
+                base = ord('A') if c.isupper() else ord('a')
+
+                decoded += chr((ord(c) - base - shift) % 26 + base)
+
+            else:
+                decoded += c
+
+        resultados.append(decoded)
+
+    return resultados[0]   # devolvemos el primero
+
+
+def base64_decode(text):
+
+    try:
+        return base64.b64decode(text).decode("utf-8")
+    except:
+        return "No se pudo decodificar Base64"
+
+
+# ===============================
+# API
+# ===============================
+
 @app.route("/", methods=["GET", "POST"])
 def predict():
 
@@ -113,6 +162,35 @@ def predict():
 
     pred = modelo.predict(entrada)[0]
 
-    resultado = clases[int(pred)]
+    tipo = clases[int(pred)]
 
-    return jsonify({"prediccion": resultado})
+    # =========================
+    # DESCIFRADO
+    # =========================
+
+    descifrado = ""
+
+    if tipo == "Texto plano":
+
+        descifrado = texto
+
+    elif tipo == "ROT13":
+
+        descifrado = rot13_decode(texto)
+
+    elif tipo == "Caesar":
+
+        descifrado = caesar_bruteforce(texto)
+
+    elif tipo == "Base64":
+
+        descifrado = base64_decode(texto)
+
+    elif tipo == "XOR":
+
+        descifrado = "No se puede descifrar XOR sin la clave."
+
+    return jsonify({
+        "prediccion": tipo,
+        "descifrado": descifrado
+    })
