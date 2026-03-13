@@ -158,6 +158,63 @@ def base64_decode(text):
     except:
         return "No se pudo decodificar Base64"
 
+def detectar_shift_caesar(text):
+
+    best_shift = 0
+    best_score = float("inf")
+
+    english_freq = {
+    'a':8.167,'b':1.492,'c':2.782,'d':4.253,'e':12.702,
+    'f':2.228,'g':2.015,'h':6.094,'i':6.966,'j':0.153,
+    'k':0.772,'l':4.025,'m':2.406,'n':6.749,'o':7.507,
+    'p':1.929,'q':0.095,'r':5.987,'s':6.327,'t':9.056,
+    'u':2.758,'v':0.978,'w':2.360,'x':0.150,'y':1.974,'z':0.074
+    }
+
+    for shift in range(26):
+
+        decoded = ""
+
+        for c in text:
+
+            if c.isalpha():
+
+                base = ord('A') if c.isupper() else ord('a')
+
+                decoded += chr((ord(c) - base - shift) % 26 + base)
+
+            else:
+                decoded += c
+
+        # calcular chi-square
+        decoded = decoded.lower()
+
+        letters = [c for c in decoded if c.isalpha()]
+
+        N = len(letters)
+
+        if N == 0:
+            continue
+
+        counter = Counter(letters)
+
+        chi = 0
+
+        for letter in english_freq:
+
+            observed = counter.get(letter,0)
+
+            expected = english_freq[letter] * N / 100
+
+            chi += ((observed-expected)**2)/expected
+
+        if chi < best_score:
+
+            best_score = chi
+            best_shift = shift
+
+    return best_shift
+
 
 # ===============================
 # API
@@ -197,6 +254,16 @@ def predict():
         descifrado = rot13_decode(texto)
 
     elif tipo == "Caesar":
+
+    shift = detectar_shift_caesar(texto)
+
+    if shift == 13:
+
+        tipo = "ROT13"
+
+        descifrado = rot13_decode(texto)
+
+    else:
 
         descifrado = caesar_bruteforce(texto)
 
