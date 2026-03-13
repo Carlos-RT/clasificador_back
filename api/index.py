@@ -87,17 +87,10 @@ def extraer_features(text):
 
     entropy = shannon_entropy(text)
 
-
-    # ===============================
-    # FEATURES NUEVAS
-    # ===============================
-
     base64_chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/="
-
     freq_base64 = sum(1 for c in text if c in base64_chars) / length
 
     hex_chars = "0123456789abcdefABCDEF"
-
     ratio_hex = sum(1 for c in text if c in hex_chars) / length
 
     try:
@@ -106,9 +99,7 @@ def extraer_features(text):
     except:
         es_base64 = 0
 
-
     return [
-
         length,
         entropy,
         mayus/length,
@@ -130,6 +121,42 @@ def extraer_features(text):
         ratio_hex,
         es_base64
     ]
+
+
+# ===============================
+# DETECTAR SHIFT CAESAR
+# ===============================
+
+def detectar_shift_caesar(text):
+
+    frecuencias_ingles = "etaoinshrdlcumwfgypbvkjxqz"
+
+    best_shift = 0
+    best_score = 0
+
+    for shift in range(26):
+
+        decoded = ""
+
+        for c in text:
+
+            if c.isalpha():
+
+                base = ord('A') if c.isupper() else ord('a')
+
+                decoded += chr((ord(c) - base - shift) % 26 + base)
+
+            else:
+                decoded += c
+
+        score = sum(decoded.lower().count(c) for c in frecuencias_ingles[:6])
+
+        if score > best_score:
+
+            best_score = score
+            best_shift = shift
+
+    return best_shift
 
 
 # ===============================
@@ -191,7 +218,6 @@ def predict():
 
     texto = data["texto"]
 
-
     features = extraer_features(texto)
 
     entrada = np.array([features])
@@ -201,6 +227,20 @@ def predict():
     pred = modelo.predict(entrada)[0]
 
     tipo = clases[int(pred)]
+
+
+    # =========================
+    # CORRECCIÓN CAESAR / ROT13
+    # =========================
+
+    if tipo in ["Caesar", "ROT13"]:
+
+        shift = detectar_shift_caesar(texto)
+
+        if shift == 13:
+            tipo = "ROT13"
+        else:
+            tipo = "Caesar"
 
 
     # =========================
